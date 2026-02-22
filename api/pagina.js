@@ -3,122 +3,174 @@ export default async function handler(req, res) {
     const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
-    let linhas = "";
+    // Filtrar somente disponíveis (ajuste se o campo for diferente)
+    const disponiveis = data.filter(item =>
+      !item.status || item.status.toLowerCase() === "disponivel"
+    );
 
-    data
-      .filter(item => !item.reserva || item.reserva !== "Reservado")
-      .forEach(item => {
+    // Ordenar por valor crescente
+    disponiveis.sort((a, b) => {
+      const valorA = parseFloat(a.valor_credito) || 0;
+      const valorB = parseFloat(b.valor_credito) || 0;
+      return valorA - valorB;
+    });
 
-        const mensagem = encodeURIComponent(
-          `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito || ""}. Pode me enviar detalhes?`
-        );
+    let cards = "";
 
-        linhas += `
-          <div class="linha">
-            <div>${item.categoria || "Carta"}</div>
+    disponiveis.forEach(item => {
+
+      const mensagem = encodeURIComponent(
+        `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito_fmt || item.valor_credito}. Pode me enviar detalhes?`
+      );
+
+      cards += `
+        <div class="item">
+          <div class="info">
+            <strong>${item.categoria || "Carta disponível"}</strong>
             <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
-            <div>${item.entrada_fmt || item.entrada}</div>
-            <div>${item.parcelas}x</div>
-            <div>
-              <a href="https://wa.me/5534991960400?text=${mensagem}" target="_blank">
-                WhatsApp
-              </a>
-            </div>
+            <div>Entrada: ${item.entrada_fmt || item.entrada || "-"}</div>
+            <div>Parcelas: ${item.parcelas || "-"}</div>
           </div>
-        `;
-      });
+          <div>
+            <a class="botao"
+              href="https://wa.me/5534991960400?text=${mensagem}"
+              target="_blank">
+              Solicitar detalhes
+            </a>
+          </div>
+        </div>
+      `;
+    });
 
     const html = `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Oportunidades Disponíveis</title>
+
       <style>
         body {
           font-family: Arial, sans-serif;
-          background: #f5f5f5;
-          padding: 40px;
+          background: #f4f6f8;
+          padding: 30px;
           margin: 0;
         }
 
         h2 {
+          margin-bottom: 10px;
+        }
+
+        .contador {
+          margin-bottom: 20px;
+          color: #555;
+        }
+
+        .topo {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
           margin-bottom: 25px;
         }
 
-        .tabela {
-          width: 100%;
-          background: white;
-          border-radius: 10px;
-          overflow: hidden;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        input {
+          padding: 10px;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          flex: 1;
+          min-width: 200px;
         }
 
-        .header, .linha {
-          display: grid;
-          grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1fr;
-          padding: 15px;
-          align-items: center;
-        }
-
-        .header {
-          background: #000;
+        button {
+          padding: 10px 15px;
+          border: none;
+          border-radius: 6px;
+          background: black;
           color: white;
-          font-weight: bold;
+          cursor: pointer;
         }
 
-        .linha {
-          border-bottom: 1px solid #eee;
-          font-size: 14px;
+        .lista .item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          margin-bottom: 15px;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          flex-wrap: wrap;
+          gap: 15px;
         }
 
-        .linha:hover {
-          background: #f9f9f9;
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 20px;
+        }
+
+        .grid .item {
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
         .valor {
+          font-size: 20px;
           font-weight: bold;
+          margin: 8px 0;
         }
 
-        a {
+        .botao {
+          display: inline-block;
+          margin-top: 12px;
           background: black;
           color: white;
-          padding: 8px 12px;
-          border-radius: 6px;
+          padding: 10px 15px;
+          border-radius: 8px;
           text-decoration: none;
-          font-size: 13px;
-        }
-
-        @media (max-width: 768px) {
-          .header {
-            display: none;
-          }
-
-          .linha {
-            grid-template-columns: 1fr;
-            gap: 6px;
-            padding: 18px;
-          }
-
-          .linha div {
-            font-size: 14px;
-          }
+          font-weight: bold;
         }
       </style>
+
+      <script>
+        function alternarVisualizacao() {
+          const container = document.getElementById("container");
+          if (container.classList.contains("lista")) {
+            container.classList.remove("lista");
+            container.classList.add("grid");
+          } else {
+            container.classList.remove("grid");
+            container.classList.add("lista");
+          }
+        }
+
+        function buscar() {
+          const termo = document.getElementById("busca").value.toLowerCase();
+          const itens = document.querySelectorAll(".item");
+
+          itens.forEach(item => {
+            const texto = item.innerText.toLowerCase();
+            item.style.display = texto.includes(termo) ? "flex" : "none";
+          });
+        }
+      </script>
     </head>
+
     <body>
 
       <h2>Oportunidades Disponíveis</h2>
+      <div class="contador">${disponiveis.length} oportunidades encontradas</div>
 
-      <div class="tabela">
-        <div class="header">
-          <div>Categoria</div>
-          <div>Crédito</div>
-          <div>Entrada</div>
-          <div>Parcelas</div>
-          <div></div>
-        </div>
+      <div class="topo">
+        <input type="text" id="busca" onkeyup="buscar()" placeholder="Buscar por valor ou categoria">
+        <button onclick="alternarVisualizacao()">Alternar Lista/Grid</button>
+      </div>
 
-        ${linhas}
+      <div id="container" class="lista">
+        ${cards}
       </div>
 
     </body>

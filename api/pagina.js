@@ -172,10 +172,16 @@ export default async function handler(req, res) {
         }
 
         .acao {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-left: 10px;
+  min-height: 100%;
+}
+
+.botao {
+  margin-top: 22px;
+}
 
         .botao {
           background: black;

@@ -45,7 +45,11 @@ export default async function handler(req, res) {
               <span class="icone">${icon}</span>
               <strong>${categoria}</strong>
             </div>
-            <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
+
+            <div class="valor">
+              ${item.valor_credito_fmt || item.valor_credito}
+            </div>
+
             <div class="detalhes">
               <span>Entrada: ${item.entrada_fmt || item.entrada || "-"}</span>
               <span>Parcelas: ${item.parcelas || "-"}</span>
@@ -75,16 +79,16 @@ export default async function handler(req, res) {
         body {
           font-family: Arial, sans-serif;
           background: #f4f6f8;
-          padding: 25px;
+          padding: 30px;
           margin: 0;
         }
 
         h2 {
-          margin-bottom: 5px;
+          margin-bottom: 8px;
         }
 
         .contador {
-          margin-bottom: 20px;
+          margin-bottom: 22px;
           color: #555;
           font-size: 14px;
         }
@@ -93,12 +97,12 @@ export default async function handler(req, res) {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
-          margin-bottom: 20px;
+          margin-bottom: 25px;
         }
 
         input {
-          padding: 8px 10px;
-          border-radius: 6px;
+          padding: 10px 12px;
+          border-radius: 8px;
           border: 1px solid #ccc;
           flex: 1;
           min-width: 200px;
@@ -106,9 +110,9 @@ export default async function handler(req, res) {
         }
 
         button {
-          padding: 8px 14px;
+          padding: 10px 16px;
           border: none;
-          border-radius: 6px;
+          border-radius: 8px;
           background: black;
           color: white;
           cursor: pointer;
@@ -120,64 +124,64 @@ export default async function handler(req, res) {
           justify-content: space-between;
           align-items: center;
           background: white;
-          padding: 18px 22px;
-          border-radius: 12px;
-          margin-bottom: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-          gap: 20px;
+          padding: 24px 28px;
+          border-radius: 14px;
+          margin-bottom: 16px;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+          gap: 30px;
           font-size: 14px;
         }
 
         .grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 20px;
+          gap: 22px;
         }
 
         .grid .item {
           background: white;
-          padding: 22px;
-          border-radius: 12px;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          padding: 26px;
+          border-radius: 14px;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.06);
           font-size: 14px;
         }
 
         .titulo {
           display: flex;
           align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
+          gap: 10px;
+          margin-bottom: 10px;
         }
 
         .icone {
-          font-size: 18px;
+          font-size: 20px;
         }
 
         .valor {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: bold;
-          margin: 6px 0;
+          margin: 12px 0 14px 0;
         }
 
         .detalhes {
           display: flex;
-          gap: 20px;
+          gap: 25px;
           flex-wrap: wrap;
           font-size: 13px;
           color: #555;
-          margin-top: 4px;
         }
 
         .acao {
           display: flex;
           align-items: center;
+          justify-content: center;
         }
 
         .botao {
           background: black;
           color: white;
-          padding: 10px 16px;
-          border-radius: 8px;
+          padding: 12px 20px;
+          border-radius: 10px;
           text-decoration: none;
           font-weight: bold;
           white-space: nowrap;

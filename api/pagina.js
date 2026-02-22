@@ -3,17 +3,23 @@ export default async function handler(req, res) {
     const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
-    // Filtrar somente disponíveis (ajuste se o campo for diferente)
     const disponiveis = data.filter(item =>
       !item.status || item.status.toLowerCase() === "disponivel"
     );
 
-    // Ordenar por valor crescente
     disponiveis.sort((a, b) => {
       const valorA = parseFloat(a.valor_credito) || 0;
       const valorB = parseFloat(b.valor_credito) || 0;
       return valorA - valorB;
     });
+
+    function getIcon(categoria = "") {
+      const cat = categoria.toLowerCase();
+      if (cat.includes("imovel")) return "🏠";
+      if (cat.includes("veiculo")) return "🚗";
+      if (cat.includes("servico")) return "🛠️";
+      return "💳";
+    }
 
     let cards = "";
 
@@ -23,21 +29,28 @@ export default async function handler(req, res) {
         `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito_fmt || item.valor_credito}. Pode me enviar detalhes?`
       );
 
+      const categoria = item.categoria || "Carta disponível";
+      const icon = getIcon(categoria);
+
       cards += `
         <div class="item">
           <div class="info">
-            <strong>${item.categoria || "Carta disponível"}</strong>
+            <div class="titulo">
+              <span class="icone">${icon}</span>
+              <strong>${categoria}</strong>
+            </div>
             <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
-            <div>Entrada: ${item.entrada_fmt || item.entrada || "-"}</div>
-            <div>Parcelas: ${item.parcelas || "-"}</div>
+            <div class="detalhes">
+              <span>Entrada: ${item.entrada_fmt || item.entrada || "-"}</span>
+              <span>Parcelas: ${item.parcelas || "-"}</span>
+            </div>
           </div>
-          <div>
-            <a class="botao"
-              href="https://wa.me/5534991960400?text=${mensagem}"
-              target="_blank">
-              Solicitar detalhes
-            </a>
-          </div>
+
+          <a class="botao"
+            href="https://wa.me/5534991960400?text=${mensagem}"
+            target="_blank">
+            Solicitar
+          </a>
         </div>
       `;
     });
@@ -54,41 +67,44 @@ export default async function handler(req, res) {
         body {
           font-family: Arial, sans-serif;
           background: #f4f6f8;
-          padding: 30px;
+          padding: 25px;
           margin: 0;
         }
 
         h2 {
-          margin-bottom: 10px;
+          margin-bottom: 5px;
         }
 
         .contador {
           margin-bottom: 20px;
           color: #555;
+          font-size: 14px;
         }
 
         .topo {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
-          margin-bottom: 25px;
+          margin-bottom: 20px;
         }
 
         input {
-          padding: 10px;
+          padding: 8px 10px;
           border-radius: 6px;
           border: 1px solid #ccc;
           flex: 1;
           min-width: 200px;
+          font-size: 14px;
         }
 
         button {
-          padding: 10px 15px;
+          padding: 8px 14px;
           border: none;
           border-radius: 6px;
           background: black;
           color: white;
           cursor: pointer;
+          font-size: 14px;
         }
 
         .lista .item {
@@ -96,17 +112,17 @@ export default async function handler(req, res) {
           justify-content: space-between;
           align-items: center;
           background: white;
-          padding: 20px;
-          border-radius: 12px;
-          margin-bottom: 15px;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-          flex-wrap: wrap;
+          padding: 14px 18px;
+          border-radius: 10px;
+          margin-bottom: 10px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.05);
           gap: 15px;
+          font-size: 14px;
         }
 
         .grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
           gap: 20px;
         }
 
@@ -115,44 +131,65 @@ export default async function handler(req, res) {
           padding: 20px;
           border-radius: 12px;
           box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+          font-size: 14px;
+        }
+
+        .titulo {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 5px;
+        }
+
+        .icone {
+          font-size: 18px;
         }
 
         .valor {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: bold;
-          margin: 8px 0;
+          margin: 5px 0;
+        }
+
+        .detalhes {
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          font-size: 13px;
+          color: #555;
         }
 
         .botao {
-          display: inline-block;
-          margin-top: 12px;
           background: black;
           color: white;
-          padding: 10px 15px;
-          border-radius: 8px;
+          padding: 8px 14px;
+          border-radius: 6px;
           text-decoration: none;
           font-weight: bold;
+          white-space: nowrap;
         }
       </style>
 
       <script>
         function alternarVisualizacao() {
           const container = document.getElementById("container");
-          if (container.classList.contains("lista")) {
-            container.classList.remove("lista");
-            container.classList.add("grid");
-          } else {
-            container.classList.remove("grid");
-            container.classList.add("lista");
-          }
+          container.classList.toggle("lista");
+          container.classList.toggle("grid");
+        }
+
+        function removerAcentos(texto) {
+          return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
         function buscar() {
-          const termo = document.getElementById("busca").value.toLowerCase();
+          const termo = removerAcentos(
+            document.getElementById("busca").value.toLowerCase()
+          );
+
           const itens = document.querySelectorAll(".item");
 
           itens.forEach(item => {
-            const texto = item.innerText.toLowerCase();
+            const texto = removerAcentos(item.innerText.toLowerCase());
             item.style.display = texto.includes(termo) ? "flex" : "none";
           });
         }
@@ -166,7 +203,7 @@ export default async function handler(req, res) {
 
       <div class="topo">
         <input type="text" id="busca" onkeyup="buscar()" placeholder="Buscar por valor ou categoria">
-        <button onclick="alternarVisualizacao()">Alternar Lista/Grid</button>
+        <button onclick="alternarVisualizacao()">Alternar visualização</button>
       </div>
 
       <div id="container" class="lista">

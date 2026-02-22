@@ -6,20 +6,25 @@ export default async function handler(req, res) {
     let cards = "";
 
     data.forEach(item => {
-      cards += `
-        <div class="card">
-          <h3>${item.categoria || "Carta disponível"}</h3>
-          <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
-          <p>Entrada: ${item.entrada_fmt || item.entrada}</p>
-          <p>Parcelas: ${item.parcelas}</p>
-          <a class="botao"
-            href="https://wa.me/5534991960400?text=Tenho%20interesse%20na%20carta%20${item.id}"
-            target="_blank">
-            Solicitar detalhes
-          </a>
-        </div>
-      `;
-    });
+
+  const mensagem = encodeURIComponent(
+    `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito || ""}. Pode me enviar detalhes?`
+  );
+
+  cards += `
+    <div class="card">
+      <h3>${item.categoria || "Carta disponível"}</h3>
+      <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
+      <p>Entrada: ${item.entrada_fmt || item.entrada}</p>
+      <p>Parcelas: ${item.parcelas}</p>
+      <a class="botao"
+        href="https://wa.me/5534991960400?text=${mensagem}"
+        target="_blank">
+        Solicitar detalhes
+      </a>
+    </div>
+  `;
+});
 
     const html = `
     <!DOCTYPE html>

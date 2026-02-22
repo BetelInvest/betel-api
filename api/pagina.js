@@ -13,11 +13,17 @@ export default async function handler(req, res) {
       return valorA - valorB;
     });
 
+    function removerAcentos(texto = "") {
+      return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
     function getIcon(categoria = "") {
-      const cat = categoria.toLowerCase();
+      const cat = removerAcentos(categoria.toLowerCase());
+
       if (cat.includes("imovel")) return "🏠";
       if (cat.includes("veiculo")) return "🚗";
       if (cat.includes("servico")) return "🛠️";
+      if (cat.includes("maquina")) return "🏗️";
       return "💳";
     }
 
@@ -46,11 +52,13 @@ export default async function handler(req, res) {
             </div>
           </div>
 
-          <a class="botao"
-            href="https://wa.me/5534991960400?text=${mensagem}"
-            target="_blank">
-            Solicitar
-          </a>
+          <div class="acao">
+            <a class="botao"
+              href="https://wa.me/5534991960400?text=${mensagem}"
+              target="_blank">
+              Solicitar detalhes
+            </a>
+          </div>
         </div>
       `;
     });
@@ -112,11 +120,11 @@ export default async function handler(req, res) {
           justify-content: space-between;
           align-items: center;
           background: white;
-          padding: 14px 18px;
-          border-radius: 10px;
-          margin-bottom: 10px;
-          box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-          gap: 15px;
+          padding: 18px 22px;
+          border-radius: 12px;
+          margin-bottom: 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+          gap: 20px;
           font-size: 14px;
         }
 
@@ -128,7 +136,7 @@ export default async function handler(req, res) {
 
         .grid .item {
           background: white;
-          padding: 20px;
+          padding: 22px;
           border-radius: 12px;
           box-shadow: 0 5px 15px rgba(0,0,0,0.05);
           font-size: 14px;
@@ -138,7 +146,7 @@ export default async function handler(req, res) {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
         }
 
         .icone {
@@ -148,22 +156,28 @@ export default async function handler(req, res) {
         .valor {
           font-size: 18px;
           font-weight: bold;
-          margin: 5px 0;
+          margin: 6px 0;
         }
 
         .detalhes {
           display: flex;
-          gap: 15px;
+          gap: 20px;
           flex-wrap: wrap;
           font-size: 13px;
           color: #555;
+          margin-top: 4px;
+        }
+
+        .acao {
+          display: flex;
+          align-items: center;
         }
 
         .botao {
           background: black;
           color: white;
-          padding: 8px 14px;
-          border-radius: 6px;
+          padding: 10px 16px;
+          border-radius: 8px;
           text-decoration: none;
           font-weight: bold;
           white-space: nowrap;

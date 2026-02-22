@@ -13,7 +13,7 @@ export default async function handler(req, res) {
           <p>Entrada: ${item.entrada_fmt || item.entrada}</p>
           <p>Parcelas: ${item.parcelas}</p>
           <a class="botao"
-            href="https://wa.me/55SEUNUMERO?text=Tenho%20interesse%20na%20carta%20${item.id}"
+            href="https://wa.me/5534991960400?text=Tenho%20interesse%20na%20carta%20${item.id}"
             target="_blank">
             Solicitar detalhes
           </a>

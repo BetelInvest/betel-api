@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const response = await fetch("COLE_AQUI_A_URL_REAL_DA_API");
+    const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
     let cards = "";

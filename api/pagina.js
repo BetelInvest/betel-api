@@ -3,28 +3,30 @@ export default async function handler(req, res) {
     const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
-    let cards = "";
+    let linhas = "";
 
-    data.forEach(item => {
+    data
+      .filter(item => !item.reserva || item.reserva !== "Reservado")
+      .forEach(item => {
 
-  const mensagem = encodeURIComponent(
-    `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito || ""}. Pode me enviar detalhes?`
-  );
+        const mensagem = encodeURIComponent(
+          `Olá, tenho interesse na carta ${item.id || ""} no valor de ${item.valor_credito || ""}. Pode me enviar detalhes?`
+        );
 
-  cards += `
-    <div class="card">
-      <h3>${item.categoria || "Carta disponível"}</h3>
-      <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
-      <p>Entrada: ${item.entrada_fmt || item.entrada}</p>
-      <p>Parcelas: ${item.parcelas}</p>
-      <a class="botao"
-        href="https://wa.me/5534991960400?text=${mensagem}"
-        target="_blank">
-        Solicitar detalhes
-      </a>
-    </div>
-  `;
-});
+        linhas += `
+          <div class="linha">
+            <div>${item.categoria || "Carta"}</div>
+            <div class="valor">${item.valor_credito_fmt || item.valor_credito}</div>
+            <div>${item.entrada_fmt || item.entrada}</div>
+            <div>${item.parcelas}x</div>
+            <div>
+              <a href="https://wa.me/5534991960400?text=${mensagem}" target="_blank">
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        `;
+      });
 
     const html = `
     <!DOCTYPE html>
@@ -40,38 +42,66 @@ export default async function handler(req, res) {
         }
 
         h2 {
-          margin-bottom: 30px;
+          margin-bottom: 25px;
         }
 
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 25px;
-        }
-
-        .card {
+        .tabela {
+          width: 100%;
           background: white;
-          padding: 25px;
-          border-radius: 14px;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .header, .linha {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1fr;
+          padding: 15px;
+          align-items: center;
+        }
+
+        .header {
+          background: #000;
+          color: white;
+          font-weight: bold;
+        }
+
+        .linha {
+          border-bottom: 1px solid #eee;
+          font-size: 14px;
+        }
+
+        .linha:hover {
+          background: #f9f9f9;
         }
 
         .valor {
-          font-size: 22px;
           font-weight: bold;
-          margin: 10px 0;
         }
 
-        .botao {
-          display: block;
-          margin-top: 20px;
-          text-align: center;
+        a {
           background: black;
           color: white;
-          padding: 12px;
-          border-radius: 8px;
+          padding: 8px 12px;
+          border-radius: 6px;
           text-decoration: none;
-          font-weight: bold;
+          font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+          .header {
+            display: none;
+          }
+
+          .linha {
+            grid-template-columns: 1fr;
+            gap: 6px;
+            padding: 18px;
+          }
+
+          .linha div {
+            font-size: 14px;
+          }
         }
       </style>
     </head>
@@ -79,8 +109,16 @@ export default async function handler(req, res) {
 
       <h2>Oportunidades Disponíveis</h2>
 
-      <div class="grid">
-        ${cards}
+      <div class="tabela">
+        <div class="header">
+          <div>Categoria</div>
+          <div>Crédito</div>
+          <div>Entrada</div>
+          <div>Parcelas</div>
+          <div></div>
+        </div>
+
+        ${linhas}
       </div>
 
     </body>

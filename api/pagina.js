@@ -124,7 +124,7 @@ export default async function handler(req, res) {
     </head>
     <body>
       <h2>Oportunidades Disponíveis</h2>
-      <div class="contador">${disponiveis.length} cartas 100% disponíveis no momento</div>
+      <div class="contador">${disponiveis.length} cartas disponíveis no momento</div>
       <div class="topo">
         <input type="text" id="busca" onkeyup="buscar()" placeholder="Filtrar por administradora, crédito ou tipo...">
         <button onclick="alternarVisualizacao()">Mudar Visualização</button>

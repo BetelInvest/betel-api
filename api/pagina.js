@@ -3,8 +3,9 @@ export default async function handler(req, res) {
     const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
+    // FILTRO: Somente o que estiver com status "disponivel"
     const disponiveis = data.filter(item =>
-      !item.status || item.status.toLowerCase() === "disponivel"
+      item.status && item.status.toLowerCase() === "disponivel"
     );
 
     disponiveis.sort((a, b) => {
@@ -34,7 +35,12 @@ export default async function handler(req, res) {
       );
 
       const categoria = item.categoria || "Carta disponível";
-      const administradora = item.administradora || "Sob consulta"; // Pega a administradora da API
+      const administradora = item.administradora || "Sob consulta";
+      
+      // Busca o valor da parcela (prioriza o formato em R$)
+      const valorParcela = item.valor_parcela_fmt || item.valor_parcela || "-";
+      const quantidadeParcelas = item.parcelas || "";
+      
       const icon = getIcon(categoria);
 
       cards += `
@@ -54,7 +60,7 @@ export default async function handler(req, res) {
 
             <div class="detalhes">
               <span>Entrada: <strong>Consultar</strong></span>
-              <span>Parcelas: ${item.parcelas || "-"}</span>
+              <span>Parcelas: ${quantidadeParcelas}x de <strong>${valorParcela}</strong></span>
             </div>
           </div>
 
@@ -83,38 +89,27 @@ export default async function handler(req, res) {
         .topo { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
         input { padding: 10px 12px; border-radius: 8px; border: 1px solid #ccc; flex: 1; min-width: 200px; font-size: 14px; }
         button { padding: 10px 16px; border: none; border-radius: 8px; background: black; color: white; cursor: pointer; font-size: 14px; }
-        
-        /* Container de Lista */
         .lista .item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 24px 28px; border-radius: 14px; margin-bottom: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.06); gap: 30px; font-size: 14px; }
-        
-        /* Container de Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
         .grid .item { background: white; padding: 26px; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); font-size: 14px; display: flex; flex-direction: column; justify-content: space-between; }
-        
         .titulo { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .icone { font-size: 20px; }
         .valor { font-size: 20px; font-weight: bold; margin: 12px 0 14px 0; }
-        .detalhes { display: flex; gap: 25px; flex-wrap: wrap; font-size: 13px; color: #555; }
-        .acao { display: flex; align-items: flex-end; }
-        .botao { background: black; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; white-space: nowrap; margin-top: 20px; display: block; text-align: center; width: 100%; }
+        .detalhes { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; color: #555; }
+        .detalhes strong { color: #000; }
+        .botao { background: black; color: white; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; white-space: nowrap; margin-top: 20px; display: block; text-align: center; }
       </style>
-
       <script>
         function alternarVisualizacao() {
           const container = document.getElementById("container");
           container.classList.toggle("lista");
           container.classList.toggle("grid");
         }
-
-        function removerAcentos(texto) {
-          return texto.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
-        }
-
         function buscar() {
-          const termo = removerAcentos(document.getElementById("busca").value.toLowerCase());
+          const termo = document.getElementById("busca").value.toLowerCase();
           const itens = document.querySelectorAll(".item");
           itens.forEach(item => {
-            const texto = removerAcentos(item.innerText.toLowerCase());
+            const texto = item.innerText.toLowerCase();
             item.style.display = texto.includes(termo) ? "" : "none";
           });
         }
@@ -122,10 +117,10 @@ export default async function handler(req, res) {
     </head>
     <body>
       <h2>Oportunidades Disponíveis</h2>
-      <div class="contador">${disponiveis.length} oportunidades encontradas</div>
+      <div class="contador">${disponiveis.length} cartas 100% disponíveis no momento</div>
       <div class="topo">
-        <input type="text" id="busca" onkeyup="buscar()" placeholder="Buscar por administradora, valor ou categoria">
-        <button onclick="alternarVisualizacao()">Alternar visualização</button>
+        <input type="text" id="busca" onkeyup="buscar()" placeholder="Filtrar por administradora, crédito ou tipo...">
+        <button onclick="alternarVisualizacao()">Mudar Visualização</button>
       </div>
       <div id="container" class="lista">
         ${cards}
@@ -136,8 +131,7 @@ export default async function handler(req, res) {
 
     res.setHeader("Content-Type", "text/html");
     res.status(200).send(html);
-
   } catch (error) {
-    res.status(200).send("<h2>Estamos atualizando as oportunidades.</h2>");
+    res.status(200).send("<h2>O sistema está sendo atualizado. Por favor, tente em alguns instantes.</h2>");
   }
 }

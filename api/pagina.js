@@ -3,10 +3,21 @@ export default async function handler(req, res) {
     const response = await fetch("https://fragaebitelloconsorcios.com.br/api/json/contemplados");
     const data = await response.json();
 
-    // FILTRO: Somente o que estiver com status "disponivel"
-    const disponiveis = data.filter(item =>
-      item.status && item.status.toLowerCase() === "disponivel"
-    );
+    // Função para limpar acentos e espaços, evitando que as cartas sumam
+    function padronizarTexto(texto) {
+      if (!texto) return "";
+      return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    }
+
+    // FILTRO CORRIGIDO:
+    const disponiveis = data.filter(item => {
+      // Se não vier status nenhum na API, assumimos que está disponível
+      if (!item.status) return true; 
+      
+      // Limpa a palavra para garantir que "Disponível" com acento seja reconhecido
+      const statusLimpo = padronizarTexto(item.status);
+      return statusLimpo === "disponivel";
+    });
 
     disponiveis.sort((a, b) => {
       const valorA = parseFloat(a.valor_credito) || 0;
@@ -14,12 +25,8 @@ export default async function handler(req, res) {
       return valorA - valorB;
     });
 
-    function removerAcentos(texto = "") {
-      return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    }
-
     function getIcon(categoria = "") {
-      const cat = removerAcentos(categoria.toLowerCase());
+      const cat = padronizarTexto(categoria);
       if (cat.includes("imovel")) return "🏠";
       if (cat.includes("veiculo")) return "🚗";
       if (cat.includes("servico")) return "🛠️";
@@ -37,7 +44,7 @@ export default async function handler(req, res) {
       const categoria = item.categoria || "Carta disponível";
       const administradora = item.administradora || "Sob consulta";
       
-      // Busca o valor da parcela (prioriza o formato em R$)
+      // Busca o valor da parcela e a quantidade
       const valorParcela = item.valor_parcela_fmt || item.valor_parcela || "-";
       const quantidadeParcelas = item.parcelas || "";
       
@@ -106,10 +113,10 @@ export default async function handler(req, res) {
           container.classList.toggle("grid");
         }
         function buscar() {
-          const termo = document.getElementById("busca").value.toLowerCase();
+          const termo = document.getElementById("busca").value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
           const itens = document.querySelectorAll(".item");
           itens.forEach(item => {
-            const texto = item.innerText.toLowerCase();
+            const texto = item.innerText.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
             item.style.display = texto.includes(termo) ? "" : "none";
           });
         }
